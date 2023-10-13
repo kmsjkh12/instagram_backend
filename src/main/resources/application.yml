@@ -1,0 +1,31 @@
+spring:
+  servlet:
+    multipart:
+      location: /Users/mok/Desktop/numble_insta/src/main/resources/static/downloads
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/instagram?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul
+    username: instagram
+    password: 1234
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        use_sql_comments: true
+server:
+  port: 8082
+
+
+
+
+# HS512 알고리즘을 사용할 것이기 때문에 512bit, 즉 64byte 이상의 secret key를 사용해야 한다.
+# Secret 값은 특정 문자열을 Base64 로 인코딩한 값 사용 (아래 명령어를 터미널에 쳐보면 그대로 나옴)
+# $ echo 'spring-boot-security-jwt-tutorial-bj-spring-boot-security-jwt-tutorial' | base64
+# cfg => 전역 변수 관리 statement에 키값 넣어두기
+jwt:
+  secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXR1dG9yaWFsLWJqLXNwcmluZy1ib290LXNlY3VyaXR5LWp3dC10dXRvcmlhbAo=GzcMAY5
+  token-validity-in-seconds: 1000

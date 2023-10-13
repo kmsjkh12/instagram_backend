@@ -6,20 +6,19 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Getter
 @NoArgsConstructor
-public class CommentEntity {
-
+@Getter
+public class Reply {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long comment_id;
+    private Long replyid;
 
     @Column
-    private String comment_content;
+    private String replycontent;
 
     @Column
-    private Long post_id; //댓글을 작성한 글 번호 다대일
-
+    private Long commentid;  //댓글 번호
     @Column
-    private Long writing_user_id;  //작성자  다대일
+    private Long userid;    //댓글 작성자
+
 }

@@ -1,50 +1,88 @@
 package com.example.numble_insta.controller;
 
-import com.example.numble_insta.dto.UserDto;
-import com.example.numble_insta.entity.UserEntity;
+import com.example.numble_insta.dto.User.LoginDto;
+import com.example.numble_insta.dto.User.UserDto;
+import com.example.numble_insta.entity.User;
+import com.example.numble_insta.exception.*;
 import com.example.numble_insta.service.UserService;
+import com.example.numble_insta.util.UserUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+
 
 @Controller
 public class UserController {
 
+    @Autowired
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    @Autowired
+    private final UserUtil userUtil;
+
+    public UserController(UserService userService, UserUtil userUtil) {
         this.userService = userService;
+        this.userUtil = userUtil;
     }
 
-    @PostMapping("/user/signup")
-    // 요청
-    // nickname	    string              유저 닉네임
-    // profile_image	multipartFile	    프로필 사진
 
-    // 응답
-    // id              long                유저 id  //자동 생성
-
-    // nickname	    string              유저 닉네임
-    // profile_image	multipartFile	    프로필 사진 url
-
-
+    //회원 가입
+    @PostMapping("/signup")
     public ResponseEntity<?> signUp(@ModelAttribute UserDto userDto){
         try{
-            UserEntity user = userService.signup(userDto);
+            User user = userService.signup(userDto);
+
             return ResponseEntity.ok(user);
         }
-        catch () {
-            //서비스에서 던진 예외 두개를 넣고
-
+        catch (ExistUserException | NoDataDtoException e) {
+            ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body() //예외
+                    .body(exceptionResponse);
+            //예외
         }
     }
 
-    @PostMapping("/user/login")
-    public ResponseEntity<?> login(){
+    //로그인
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto){
         try{
+            return ResponseEntity.ok(userService.login(loginDto));
+        }
+        catch(ExistUserException e){
+            ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(exceptionResponse);
+        }
+    }
+
+    //회원 탈퇴
+    @DeleteMapping("/cancel/{user_id}")
+    public ResponseEntity<?> cancel(@PathVariable Long user_id){
+        try{
+            System.out.print("cancel");
+            User user = userUtil.getUtils();
+            userService.cancel(user, user_id);
+            return ResponseEntity.ok(HttpStatus.OK);
+        }
+        catch (NotEqualsAuthUserException | AlreadyFalseUserException e){
+            ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(exceptionResponse);
+        }
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateProfile(@ModelAttribute UserDto userDto){
+        try{
+            User user = userUtil.getUtils();
+            return ResponseEntity.ok(userService.updateProfile(userDto,user));
+        }
+        catch (AlreadyFalseUserException | NoDataDtoException e){
+            ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(exceptionResponse);
+        }
     }
 }
