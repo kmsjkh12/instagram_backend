@@ -48,8 +48,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers(new AntPathRequestMatcher("/**/login")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/**/signup")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/**/profile")).permitAll()
-
+                .requestMatchers(new AntPathRequestMatcher("/**/profile/{id}")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher( "**/swagger-ui/**")).permitAll()
                 .anyRequest().authenticated() //위의 세개를 제외하고는 모든 요청은 인증을 거쳐야함
 
                 .and()

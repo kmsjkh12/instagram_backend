@@ -32,9 +32,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@ModelAttribute UserDto userDto){
         try{
-            User user = userService.signup(userDto);
-
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(userService.signup(userDto));
         }
         catch (ExistUserException | NoDataDtoException e) {
             ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
@@ -85,4 +83,18 @@ public class UserController {
                     .body(exceptionResponse);
         }
     }
+
+    //유저 조회 ,팔로워 팔로우도 같이 반환
+    @GetMapping("/profile/{user_id}")
+    public ResponseEntity<?> selectProfile(@PathVariable Long user_id){
+        try{
+            return ResponseEntity.ok(userService.selectProfile(user_id));
+        }
+        catch (AlreadyFalseUserException e){
+            ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(exceptionResponse);
+        }
+    }
+
 }

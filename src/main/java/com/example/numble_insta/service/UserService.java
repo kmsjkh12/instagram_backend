@@ -1,8 +1,10 @@
 package com.example.numble_insta.service;
 
+import com.example.numble_insta.dto.User.AllUserDto;
 import com.example.numble_insta.dto.User.LoginDto;
 import com.example.numble_insta.dto.TokenDto;
 import com.example.numble_insta.dto.User.UserDto;
+import com.example.numble_insta.dto.User.UserFollowDto;
 import com.example.numble_insta.entity.User;
 import com.example.numble_insta.exception.AlreadyFalseUserException;
 import com.example.numble_insta.exception.ExistUserException;
@@ -10,6 +12,7 @@ import com.example.numble_insta.exception.NoDataDtoException;
 import com.example.numble_insta.exception.NotEqualsAuthUserException;
 import com.example.numble_insta.jwt.JwtFilter;
 import com.example.numble_insta.jwt.TokenProvider;
+import com.example.numble_insta.repository.FollowRepository;
 import com.example.numble_insta.repository.UserRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+
 import java.util.Collections;
 
 @Service
@@ -25,14 +29,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final TokenProvider tokenProvider;
-
-    public UserService(UserRepository userRepository, TokenProvider tokenProvider) {
+    private final FollowRepository followRepository;
+    public UserService(UserRepository userRepository, TokenProvider tokenProvider, FollowRepository followRepository) {
         this.userRepository = userRepository;
         this.tokenProvider = tokenProvider;
+        this.followRepository = followRepository;
     }
 
 
-    public User signup(UserDto userDto){
+    public AllUserDto signup(UserDto userDto){
         if(userDto.getUsernickname() == null || userDto.getUserimage()== null){
             throw new NoDataDtoException("닉네임, 이미지를 다시 확인해주세요");
         }
@@ -46,7 +51,31 @@ public class UserService {
                 .userimage(userDto.getUserimage().getOriginalFilename())
                 .active(true)
                 .build();
-       return userRepository.save(saveuser);
+        userRepository.save(saveuser);
+
+        return AllUserDto.builder()
+               .id(saveuser.getUserid())
+               .usernickname(saveuser.getUsernickname())
+               .userimage(saveuser.getUserimage())
+               .build();
+    }
+
+    public AllUserDto updateProfile(UserDto userDto, User user) {
+
+        if(!user.isActive()){
+            throw new AlreadyFalseUserException("이미 탈퇴한 계정입니다");
+        }
+        if(userDto.getUsernickname() == null || userDto.getUserimage() == null){
+            throw new NoDataDtoException("닉네임, 이미지를 다시 확인해주세요");
+        }
+        user.setUsernickname(userDto.getUsernickname());
+        user.setUserimage(userDto.getUserimage().getOriginalFilename());
+
+        return AllUserDto.builder()
+                .id(user.getUserid())
+                .usernickname(user.getUsernickname())
+                .userimage(user.getUserimage())
+                .build();
     }
 
     public ResponseEntity<TokenDto> login (LoginDto loginDto){
@@ -76,16 +105,23 @@ public class UserService {
 
     }
 
-    public User updateProfile(UserDto userDto, User user) {
+
+    public UserFollowDto selectProfile(Long userId) {
+        User user  = userRepository.findByUserid(userId);
 
         if(!user.isActive()){
-            throw new AlreadyFalseUserException("이미 탈퇴한 계정입니다");
+            throw new AlreadyFalseUserException("이미 탈퇴한 회원입니다.");
         }
-        if(userDto.getUsernickname() == null || userDto.getUserimage() == null){
-            throw new NoDataDtoException("닉네임, 이미지를 다시 확인해주세요");
-        }
-        user.setUsernickname(userDto.getUsernickname());
-        user.setUserimage(userDto.getUserimage().getOriginalFilename());
-        return user;
-    }
+        Long following = followRepository.countByFollowingid_Userid(userId);
+        Long follower = followRepository.countByFollowerid_Userid(userId);
+
+        return UserFollowDto.builder()
+                .nickname(user.getUsernickname())
+                .profile_image(user.getUserimage())
+                .follower(follower)
+                .following(following)
+                .build();
+     }
+
+
 }

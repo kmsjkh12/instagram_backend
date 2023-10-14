@@ -20,7 +20,7 @@ public class CommentService {
         this.commentRepository = commentRepository;
     }
 
-    public Comment createComment(CreateCommentDto createCommentDto, User user) {
+    public CommentDto createComment(CreateCommentDto createCommentDto, User user) {
         Post post = postRepository.findByPostid(createCommentDto.getPostid());
         if(!user.isActive()){
             throw new AlreadyFalseUserException("이미 탈퇴한 회원입니다.");
@@ -42,10 +42,13 @@ public class CommentService {
         commentRepository.save(comment);
         comment.setPostid(null);
         comment.setUserid(null);
-        return comment;
+        return CommentDto.builder()
+                .id(comment.getCommentid())
+                .content(comment.getCommentcontent())
+                .build();
     }
 
-    public Comment updateComment(CommentDto commentDto, User user){
+    public CommentDto updateComment(CommentDto commentDto, User user){
         Comment comment = commentRepository.findByCommentid(commentDto.getId());
 
         if(!user.isActive()){
@@ -59,7 +62,10 @@ public class CommentService {
             throw new NoMatchCommentUserIdException("일치하지않는 계정입니다");
         }
         comment.setCommentcontent(commentDto.getContent());
-        return comment;
+        return CommentDto.builder()
+                .id(comment.getCommentid())
+                .content(comment.getCommentcontent())
+                .build();
     }
     public void deleteComment(Long id, User user){
         Comment comment = commentRepository.findByCommentid(id);

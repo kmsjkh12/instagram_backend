@@ -1,28 +1,38 @@
 package com.example.numble_insta.service;
 
+import com.example.numble_insta.dto.Comment.FeedCommentDto;
+import com.example.numble_insta.dto.FeedDto;
 import com.example.numble_insta.dto.Post.CreatePostDto;
 import com.example.numble_insta.dto.Post.PostDto;
+import com.example.numble_insta.dto.Reply.FeedReplyDto;
 import com.example.numble_insta.entity.Post;
 import com.example.numble_insta.entity.User;
-import com.example.numble_insta.exception.AlreadyFalseUserException;
-import com.example.numble_insta.exception.ExistPostException;
-import com.example.numble_insta.exception.NoDataDtoException;
-import com.example.numble_insta.exception.NoMatchPostUserIdException;
+import com.example.numble_insta.exception.*;
+import com.example.numble_insta.repository.CommentRepository;
 import com.example.numble_insta.repository.PostRepository;
+import com.example.numble_insta.repository.ReplyRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class PostService {
 
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
-    public PostService(PostRepository postRepository) {
+    private final ReplyRepository replyRepository;
+
+    public PostService(PostRepository postRepository, CommentRepository commentRepository, ReplyRepository replyRepository) {
         this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.replyRepository = replyRepository;
     }
 
-    public Post createPost(CreatePostDto createPostDto, User user){
+    public PostDto createPost(CreatePostDto createPostDto, User user){
 
         if(!user.isActive()){
             throw new AlreadyFalseUserException("이미 탈퇴한 회원입니다.");
@@ -38,10 +48,13 @@ public class PostService {
                 .build();
         postRepository.save(post);
 
-        return post;
+        return PostDto.builder()
+                .postid(post.getPostid())
+                .postcontent(post.getPostcontent())
+                .build();
     }
 
-    public Post updatePost(PostDto postDto, User user) {
+    public PostDto updatePost(PostDto postDto, User user) {
         Post post = postRepository.findByPostid(postDto.getPostid());
 
         if(!user.isActive()){
@@ -61,7 +74,10 @@ public class PostService {
         post.setPostimage(postDto.getPostimage().getOriginalFilename());
 
         post.setUserid(null);
-        return post;
+        return PostDto.builder()
+                .postid(post.getPostid())
+                .postcontent(post.getPostcontent())
+                .build();
 
 
     }
@@ -77,6 +93,45 @@ public class PostService {
         }
 
         postRepository.delete(post);
-
     }
+
+    public List<FeedDto> getFeed(Long user_id, Long cursor, Pageable pageable) {
+        List<Post> post = null;
+        if(cursor.equals(0L)){
+            post = postRepository.findByUserid_UseridOrderByPostid(user_id,pageable);
+        }
+       if(!cursor.equals(0L)) {
+           post = postRepository.findByUserid_UseridAndPostidGreaterThan(user_id, cursor, pageable);
+       }
+        //포스트를 가져와서 포스트에 해당하는 댓글과 대댓글을 넣어줄예정
+        if (post.size()==0) {
+            throw new LastPaginationException("더 이상 페이지가 없습니다.");
+        }
+
+
+
+        //다른 방법이 잘떠오르지 않아 이런 방식으로 함
+        List<FeedDto> feed = post.stream().map(
+                p-> new FeedDto(p.getPostid(),p.getPostcontent(),p.getPostimage(),
+                        commentRepository.findByPostid_Postid(p.getPostid())
+                                .stream().map(
+                                        c->
+                                                new FeedCommentDto(
+                                                        c.getCommentid(), c.getCommentcontent(), c.getUserid().getUsernickname(),
+                                                        c.getUserid().getUserimage(),
+                                                        replyRepository.findByCommentid_Commentid(c.getCommentid())
+                                                                .stream().map(
+                                                                        r-> new FeedReplyDto(
+                                                                                r.getReplyid(), r.getReplycontent(),
+                                                                                r.getUserid().getUsernickname(),
+                                                                                r.getUserid().getUserimage()
+                                                                        )
+                                                                ).collect(Collectors.toList()))
+                                ).collect(Collectors.toList())
+                        )
+        ).collect(Collectors.toList());
+return feed;
+    }
+
+
 }

@@ -1,28 +1,31 @@
 package com.example.numble_insta.entity;
 
+
 import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
+@Table(name = "chatroom")
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Reply {
+public class ChatRoom {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long replyid;
-
-    @Column
-    private String replycontent;
+    private Long chatroomid;
 
     @ManyToOne
-    @JoinColumn(name ="commentid")
-    private Comment commentid;  //댓글 번호
+    @JoinColumn(name ="sendid")
+    private User sendid;      //받는 사람
+
     @ManyToOne
-    @JoinColumn(name ="userid")
-    private User userid;    //댓글 작성자
+    @JoinColumn(name ="receiveid")
+    private User receiveid;      //받는 사람
+
+
 
 }

@@ -6,14 +6,18 @@ import com.example.numble_insta.entity.User;
 import com.example.numble_insta.exception.*;
 import com.example.numble_insta.service.PostService;
 import com.example.numble_insta.util.UserUtil;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.awt.print.Pageable;
 
 @RestController
 public class PostController {
 
+    private static final Integer PAGE_DEFAULT_SIZE = 1;
+    //피드는 한 페이지에 하나씩 보이는 거 같으니 1
     private final PostService postService;
     private final UserUtil userUtil;
     public PostController(PostService postService, UserUtil userUtil) {
@@ -57,6 +61,18 @@ public class PostController {
             return ResponseEntity.ok(HttpStatus.OK);
         }
         catch (NoMatchPostUserIdException | ExistPostException e){
+            ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(exceptionResponse);
+        }
+    }
+
+    @GetMapping("/feed/{user_id}/{cursor}")
+    public ResponseEntity<?> getFeed(@PathVariable Long user_id , @PathVariable Long cursor){
+        try{
+            return ResponseEntity.ok(postService.getFeed(user_id,cursor, PageRequest.of(0,PAGE_DEFAULT_SIZE)));
+        }
+        catch (LastPaginationException e){
             ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(exceptionResponse);
