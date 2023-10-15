@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,15 +27,17 @@ public class TokenProvider implements InitializingBean { //빈 초기화
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private static final String AUTHORITIES_KEY = "auth";
     private final String secret;
-    private final long tokenValidityInMillIseconds;
     private Key key;
+
+    private long tokenValidityInMillIseconds;
+
 
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds
-    ) {
+            @Value("${jwt.token-validity-in-seconds}")long tokenValidityInMillIseconds
+            ) {
         this.secret = secret;
-        this.tokenValidityInMillIseconds = tokenValidityInSeconds * 1000;
+        this.tokenValidityInMillIseconds = tokenValidityInMillIseconds;
     }
 
     //빈이 생성되고 주입을 받은 후에 시크릿 값을 base64 decode해서 key 할당
@@ -61,6 +64,7 @@ public class TokenProvider implements InitializingBean { //빈 초기화
     }
 
     public Authentication getAuthentication(String token) {
+
         Claims claims = Jwts
                 .parserBuilder()
                 .setSigningKey(key)

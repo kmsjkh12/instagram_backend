@@ -86,7 +86,8 @@ public class UserService {
         if(user == null){
             throw new ExistUserException("없는 닉네임입니다");
         }
-        String jwt = tokenProvider.createToken(authentication); //토큰 생성
+        String jwt = tokenProvider.createToken(authentication);
+
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER,"Bearer" + jwt);  //헤더에 넣기
 

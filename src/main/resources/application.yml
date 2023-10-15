@@ -21,6 +21,12 @@ spring:
         use_sql_comments: true
 server:
   port: 8082
+  
+data:
+  redis:
+    host: localhost
+    port: 6379
+
 
 
 
@@ -33,12 +39,4 @@ jwt:
   secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXR1dG9yaWFsLWJqLXNwcmluZy1ib290LXNlY3VyaXR5LWp3dC10dXRvcmlhbAo=GzcMAY5
   token-validity-in-seconds: 1000
 
-springdoc:
-  packages-to-scan: com/example/numble_insta/controller
-  default-consumes-media-type: application/json;charset=UTF-8
-  default-produces-media-type: application/json;charset=UTF-8
-  swagger-ui:
-    path: /
-    disable-swagger-default-url: true
-    display-request-duration: true
-    operations-sorter: alpha
+
