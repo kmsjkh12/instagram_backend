@@ -182,7 +182,7 @@ JPA에 GreaterThan을 활용해서 구현함, 사용자가 본 마지막 postid�
 </pre>
 
 ## 보완할 점
-access token, refresh token, 트러블 슈팅 내용 정리, 테스트 코드와 배포는 추후 진행 예정
+ 트러블 슈팅 내용 정리, 테스트 코드와 배포는 추후 진행 예정
 
 
 ## 후기 
