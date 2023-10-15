@@ -2,9 +2,9 @@ name: HoeStory Github Action
 
 on:
   push:
-    branches: [ 브랜치명 ]
+    branches: [ main ]
   pull_request:
-    branches: [ 브랜치명 ]
+    branches: [ main ]
     
 permissions: write-all
 
