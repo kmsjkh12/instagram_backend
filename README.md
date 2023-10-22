@@ -7,7 +7,7 @@ https://thoughtful-arch-8c2.notion.site/Spring-c83f01ab221a4166a2713120728aa552
 
 
 ## 작업기간
-2023_10-12 ~ 
+2023-10-12 ~ 2023-10-16
 ## 가이드라인 앱 이미지
 
 <img width="1146" alt="스크린샷 2023-10-14 오후 7 59 40" src="https://github.com/kmsjkh12/instagram_backend/assets/121033327/cf7f6115-9f22-46ff-b44b-e6341c858c63">
